@@ -1,57 +1,34 @@
 package com.cts.projectmanager.eo;
 
-import org.hibernate.annotations.GenericGenerator;
-
 import javax.persistence.*;
 import java.sql.Date;
+import java.util.Objects;
 
-/**
- * Task Entity
- *
- * @author Ramakrishna Gurram
- */
 @Entity
-@Table(name = "task", schema = "project")
+@Table(name = "task", schema = "project_test", catalog = "")
 public class TaskEO {
-    private Long TaskId;
-    private Long parentId;
-    private Long projectId;
+    private long taskId;
     private String task;
     private Date startDate;
     private Date endDate;
     private String status;
-    private int priority;
+    private Integer priority;
+    private ParentEO parent;
+    private ProjectEO project;
+    private UsersEO user;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
-    @GenericGenerator(strategy = "native", name = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "task_id")
-    public Long getTaskId() {
-        return TaskId;
+    public long getTaskId() {
+        return taskId;
     }
 
-    public void setTaskId(Long taskId) {
-        TaskId = taskId;
+    public void setTaskId(long taskId) {
+        this.taskId = taskId;
     }
 
-    @Column(name = "parent_id")
-    public Long getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
-    }
-
-    @Column(name = "project_id")
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
-
+    @Basic
     @Column(name = "task")
     public String getTask() {
         return task;
@@ -61,6 +38,7 @@ public class TaskEO {
         this.task = task;
     }
 
+    @Basic
     @Column(name = "start_date")
     public Date getStartDate() {
         return startDate;
@@ -70,6 +48,7 @@ public class TaskEO {
         this.startDate = startDate;
     }
 
+    @Basic
     @Column(name = "end_date")
     public Date getEndDate() {
         return endDate;
@@ -79,6 +58,7 @@ public class TaskEO {
         this.endDate = endDate;
     }
 
+    @Basic
     @Column(name = "status")
     public String getStatus() {
         return status;
@@ -88,12 +68,59 @@ public class TaskEO {
         this.status = status;
     }
 
+    @Basic
     @Column(name = "priority")
-    public int getPriority() {
+    public Integer getPriority() {
         return priority;
     }
 
-    public void setPriority(int priority) {
+    public void setPriority(Integer priority) {
         this.priority = priority;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TaskEO taskEO = (TaskEO) o;
+        return taskId == taskEO.taskId &&
+                Objects.equals(task, taskEO.task) &&
+                Objects.equals(startDate, taskEO.startDate) &&
+                Objects.equals(endDate, taskEO.endDate) &&
+                Objects.equals(status, taskEO.status) &&
+                Objects.equals(priority, taskEO.priority);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(taskId, task, startDate, endDate, status, priority);
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "parent_id", referencedColumnName = "parent_id")
+    public ParentEO getParent() {
+        return parent;
+    }
+
+    public void setParent(ParentEO parentByParentId) {
+        this.parent = parentByParentId;
+    }
+    @ManyToOne
+    @JoinColumn(name = "project_id", referencedColumnName = "project_id")
+    public ProjectEO getProject() {
+        return project;
+    }
+
+    public void setProject(ProjectEO project) {
+        this.project = project;
+    }
+
+    @OneToOne(mappedBy = "task")
+    public UsersEO getUser() {
+        return user;
+    }
+
+    public void setUser(UsersEO user) {
+        this.user = user;
     }
 }

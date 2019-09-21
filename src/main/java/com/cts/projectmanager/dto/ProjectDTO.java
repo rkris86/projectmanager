@@ -1,6 +1,7 @@
 package com.cts.projectmanager.dto;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class ProjectDTO implements Serializable {
     private Long projectId;
@@ -8,7 +9,9 @@ public class ProjectDTO implements Serializable {
     private String startDate;
     private String endDate;
     private int priority;
-    private UserDTO user;
+    private int user;
+
+
 
     public Long getProjectId() {
         return projectId;
@@ -50,11 +53,11 @@ public class ProjectDTO implements Serializable {
         this.priority = priority;
     }
 
-    public UserDTO getUser() {
+    public int getUser() {
         return user;
     }
 
-    public void setUser(UserDTO user) {
+    public void setUser(int user) {
         this.user = user;
     }
 

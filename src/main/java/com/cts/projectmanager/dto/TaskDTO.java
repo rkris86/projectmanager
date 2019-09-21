@@ -3,18 +3,20 @@ package com.cts.projectmanager.dto;
 import java.io.Serializable;
 
 /**
- *  Task DTO class
+ * Task DTO class
+ *
  * @author Ramakrishna Gurram
  */
 public class TaskDTO implements Serializable {
-private Long taskId;
-private Long parentId;
-private Long projectId;
-private String task;
-private String startDate;
-private String endDate;
-private String status;
-private int priority;
+    private Long taskId;
+    private ParentTaskDTO parentTask;
+    private ProjectDTO project;
+    private String task;
+    private String startDate;
+    private String endDate;
+    private String status;
+    private int priority;
+    private UserDTO user;
 
     public Long getTaskId() {
         return taskId;
@@ -24,20 +26,20 @@ private int priority;
         this.taskId = taskId;
     }
 
-    public Long getParentId() {
-        return parentId;
+    public ParentTaskDTO getParentTask() {
+        return parentTask;
     }
 
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
+    public void setParentTask(ParentTaskDTO parentTask) {
+        this.parentTask = parentTask;
     }
 
-    public Long getProjectId() {
-        return projectId;
+    public ProjectDTO getProject() {
+        return project;
     }
 
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
+    public void setProject(ProjectDTO project) {
+        this.project = project;
     }
 
     public String getTask() {
@@ -78,5 +80,13 @@ private int priority;
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public UserDTO getUser() {
+        return user;
+    }
+
+    public void setUser(UserDTO user) {
+        this.user = user;
     }
 }
