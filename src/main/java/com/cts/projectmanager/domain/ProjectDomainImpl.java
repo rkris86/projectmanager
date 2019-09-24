@@ -3,11 +3,11 @@ package com.cts.projectmanager.domain;
 import com.cts.projectmanager.dto.ProjectDTO;
 import com.cts.projectmanager.dto.ProjectResponseDTO;
 import com.cts.projectmanager.dto.TaskDTO;
-import com.cts.projectmanager.dto.UserDTO;
 import com.cts.projectmanager.eo.ProjectEO;
 import com.cts.projectmanager.eo.TaskEO;
 import com.cts.projectmanager.eo.UsersEO;
 import com.cts.projectmanager.repository.IProjectRepository;
+import com.cts.projectmanager.repository.ITaskRepository;
 import com.cts.projectmanager.repository.IUsersRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +23,13 @@ public class ProjectDomainImpl implements IProjectDomain {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectDomainImpl.class);
     private IProjectRepository projectRepository;
     private IUsersRepository usersRepository;
+    private ITaskRepository taskRepository;
 
     @Autowired
-    public ProjectDomainImpl(IProjectRepository projectRepository, IUsersRepository usersRepository) {
+    public ProjectDomainImpl(IProjectRepository projectRepository, IUsersRepository usersRepository, ITaskRepository taskRepository) {
         this.projectRepository = projectRepository;
         this.usersRepository = usersRepository;
+        this.taskRepository = taskRepository;
     }
 
     /**
@@ -56,14 +58,14 @@ public class ProjectDomainImpl implements IProjectDomain {
             projectDTO.setPriority(project.getPriority());
             if (null != project.getUser()) {
                 projectDTO.setUser(project.getUser().getUserId());
-                projectDTO.setManagerName(project.getUser().getFirstName()+ " "+ project.getUser().getLastName());
+                projectDTO.setManagerName(project.getUser().getFirstName() + " " + project.getUser().getLastName());
             }
-            if (null!= project.getTasks()) {
+            if (null != project.getTasks()) {
                 int taskNumber = project.getTasks().size();
                 int completed = 0;
                 List<TaskDTO> tasks = new ArrayList<>();
-                for(TaskEO taskEO : project.getTasks()){
-                    if(null !=taskEO.getStatus()) {
+                for (TaskEO taskEO : project.getTasks()) {
+                    if (null != taskEO.getStatus()) {
                         if (taskEO.getStatus().equalsIgnoreCase("completed")) {
                             completed = completed + 1;
                         }
@@ -100,21 +102,21 @@ public class ProjectDomainImpl implements IProjectDomain {
         if (null != project.getProjectId()) {
             projectEO.setProjectId(project.getProjectId());
             ProjectEO existingProjectEO = projectRepository.findProjectEOByProjectId(project.getProjectId());
-            if(!projectEO.equals(existingProjectEO)) {
-                 projectEO = projectRepository.saveAndFlush(projectEO);
+            if (!projectEO.equals(existingProjectEO)) {
+                projectEO = projectRepository.saveAndFlush(projectEO);
             }
-                UsersEO existingUserEO = existingProjectEO.getUser();
-                UsersEO usersEO = new UsersEO();
-                if(null == existingUserEO ){
-                    usersEO = usersRepository.findUsersEOByUserId(project.getUser());
-                    usersEO.setProject(existingProjectEO);
-                    usersRepository.saveAndFlush(usersEO);
-                }else if(!existingUserEO.equals(usersEO)){
-                    existingUserEO.setProject(null);
-                    usersRepository.saveAndFlush(existingUserEO);
-                    usersEO.setProject(projectEO);
-                    usersRepository.saveAndFlush(usersEO);
-                }
+            UsersEO existingUserEO = existingProjectEO.getUser();
+            UsersEO usersEO = new UsersEO();
+            if (null == existingUserEO) {
+                usersEO = usersRepository.findUsersEOByUserId(project.getUser());
+                usersEO.setProject(existingProjectEO);
+                usersRepository.saveAndFlush(usersEO);
+            } else if (!existingUserEO.equals(usersEO)) {
+                existingUserEO.setProject(null);
+                usersRepository.saveAndFlush(existingUserEO);
+                usersEO.setProject(projectEO);
+                usersRepository.saveAndFlush(usersEO);
+            }
         } else {
             // New Project
             UsersEO usersEO = new UsersEO();
@@ -137,19 +139,21 @@ public class ProjectDomainImpl implements IProjectDomain {
     @Override
     public List<ProjectResponseDTO> deleteProject(ProjectDTO project) {
         LOGGER.debug("deleteProject() method started");
-        ProjectEO projectEO = new ProjectEO();
-        projectEO.setProject(project.getProject());
-        projectEO.setPriority(project.getPriority());
-        if (null != project.getStartDate()) {
-            projectEO.setStartDate(Date.valueOf(project.getStartDate()));
+        ProjectEO projects = projectRepository.findProjectEOByProjectId(project.getProjectId());
+        for (TaskEO taskEO : projects.getTasks()) {
+            UsersEO usersEO = taskEO.getUser();
+            if (null != usersEO) {
+                usersEO.setTask(null);
+                usersRepository.saveAndFlush(usersEO);
+            }
+            taskRepository.deleteTaskEOByTaskId(taskEO.getTaskId());
         }
-        if (null != project.getEndDate()) {
-            projectEO.setEndDate(Date.valueOf(project.getEndDate()));
+        UsersEO usersEO = projects.getUser();
+        if (null != usersEO) {
+            usersEO.setProject(null);
+            usersRepository.saveAndFlush(usersEO);
         }
-        if (project.getProjectId() > 0) {
-            projectEO.setProjectId(project.getProjectId());
-        }
-        projectRepository.delete(projectEO);
+        projectRepository.deleteProjectEOByProjectId(projects.getProjectId());
         LOGGER.debug("deleteProject() method ended");
         return fetchProjects();
     }
