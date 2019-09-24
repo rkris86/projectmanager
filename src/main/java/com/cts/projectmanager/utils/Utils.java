@@ -8,7 +8,6 @@ import com.cts.projectmanager.eo.ParentEO;
 import com.cts.projectmanager.eo.ProjectEO;
 import com.cts.projectmanager.eo.TaskEO;
 import com.cts.projectmanager.eo.UsersEO;
-import com.sun.deploy.association.utility.WinRegistryUtil;
 
 import java.sql.Date;
 
@@ -17,8 +16,12 @@ public class Utils {
         ProjectEO projectEO = new ProjectEO();
         projectEO.setPriority(project.getPriority());
         projectEO.setProject(project.getProject());
-        projectEO.setStartDate(project.getStartDate() != null ? Date.valueOf(project.getStartDate()) : null);
-        projectEO.setEndDate(project.getEndDate() != null ? Date.valueOf(project.getEndDate()) : null);
+        if(project.getStartDate() != null && !project.getStartDate().isEmpty()) {
+            projectEO.setStartDate(project.getStartDate() != null ? Date.valueOf(project.getStartDate()) : null);
+        }
+        if(project.getEndDate() != null && !project.getEndDate().isEmpty()) {
+            projectEO.setEndDate(project.getEndDate() != null ? Date.valueOf(project.getEndDate()) : null);
+        }
         projectEO.setProjectId(project.getProjectId());
         return projectEO;
     }
