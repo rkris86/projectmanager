@@ -6,29 +6,17 @@ pipeline {
     }
     stages {
         stage('checkout') {
-            agent any
+
             steps {
-                echo 'checkout'
                 sh 'mvn --version'
+                echo 'checkout done'
             }
         }
-        stage('compile') {
-            agent any
+        stage('build') {
             steps {
-                echo 'mvn clean compile'
+                sh 'mvn install'
             }
         }
-        stage('test') {
-                    agent any
-                    steps {
-                        echo 'mvn test'
-                    }
-         }
-         stage('package') {
-         agent any
-            steps {
-                echo 'mvn package'
-            }
-        }
+
     }
 }
