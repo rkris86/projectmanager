@@ -56,6 +56,27 @@ public class TaskController {
     }
 
     @CrossOrigin("*")
+    @RequestMapping(value = "/task/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    List<TaskDTO> fetchTasks(@PathVariable("id") Long projectId) {
+        LOGGER.debug("fetchTasks method start");
+        System.out.println("project Id is : "+projectId);
+        List<TaskDTO> response = taskService.fetchTask(projectId);
+        LOGGER.debug("fetchTasks method end");
+        return response;
+    }
+    @CrossOrigin("*")
+    @RequestMapping(value = "/task/complete/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    List<TaskDTO> completeTask(@PathVariable("id") Long taskId) {
+        LOGGER.debug("completeTask method start");
+        List<TaskDTO> response = taskService.completeTask(taskId);
+        LOGGER.debug("completeTask method end");
+        return response;
+    }
+    @CrossOrigin("*")
     @RequestMapping(value = "/task", method = RequestMethod.POST)
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)

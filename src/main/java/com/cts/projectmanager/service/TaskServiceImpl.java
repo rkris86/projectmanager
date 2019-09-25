@@ -75,32 +75,32 @@ public class TaskServiceImpl implements ITaskService {
         return response;
     }
 
+
     /**
-     * Method to edit Task
+     * Method to fetch Tasks based on the project Id
      *
-     * @param task
+     * @param projectId
      * @return
      */
     @Override
-    public List<TaskDTO> editTask(TaskDTO task) {
-
-        LOGGER.debug("editTask method start");
-        List<TaskDTO> response = taskDomain.editTask(task);
-        LOGGER.debug("editTask method end");
+    public List<TaskDTO> fetchTask(Long projectId) {
+        LOGGER.debug("fetchTask method start" + projectId);
+        List<TaskDTO> response = taskDomain.fetchTask(projectId);
+        LOGGER.debug("fetchTask method end");
         return response;
     }
 
     /**
-     * Method to delete Task
+     * Method to complete Task based on the project Id
      *
-     * @param task
+     * @param taskId
      * @return
      */
     @Override
-    public List<TaskDTO> deleteTask(TaskDTO task) {
-        LOGGER.debug("deleteTask method start");
-        List<TaskDTO> response = taskDomain.deleteTask(task);
-        LOGGER.debug("deleteTask method end");
+    public List<TaskDTO> completeTask(Long taskId) {
+        LOGGER.debug("completeTask method start" + taskId);
+        List<TaskDTO> response = taskDomain.completeTask(taskId);
+        LOGGER.debug("completeTask method end");
         return response;
     }
 }

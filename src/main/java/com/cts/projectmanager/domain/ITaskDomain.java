@@ -37,20 +37,16 @@ public interface ITaskDomain {
     List<TaskDTO> addTask(TaskDTO task);
 
     /**
-     * Method to edit Task
-     *
-     * @param task
+     *  Method to fetch Tasks based on the Project Id
+     * @param projectId
      * @return
      */
-    List<TaskDTO> editTask(TaskDTO task);
+    List<TaskDTO> fetchTask(Long projectId);
 
     /**
-     * Method to delete Task
-     *
-     * @param task
+     * Method to complete a TaskId
+     * @param taskId
      * @return
      */
-    List<TaskDTO> deleteTask(TaskDTO task);
-
-
+    List<TaskDTO> completeTask(Long taskId);
 }

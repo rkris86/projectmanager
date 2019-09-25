@@ -37,19 +37,16 @@ public interface ITaskService {
     List<TaskDTO> addTask(TaskDTO task);
 
     /**
-     * Method to edit Task
-     *
-     * @param task
+     * Method to fetch Tasks based on the project Id
+     * @param projectId
      * @return
      */
-    List<TaskDTO> editTask(TaskDTO task);
+    List<TaskDTO> fetchTask(Long projectId);
 
     /**
-     * Method to delete Task
-     *
-     * @param task
+     * Method to complete Task based on the project Id
+     * @param taskId
      * @return
      */
-    List<TaskDTO> deleteTask(TaskDTO task);
-
+    List<TaskDTO> completeTask(Long taskId);
 }

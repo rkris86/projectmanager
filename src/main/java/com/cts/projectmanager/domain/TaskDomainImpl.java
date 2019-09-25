@@ -5,9 +5,11 @@ import com.cts.projectmanager.dto.ProjectDTO;
 import com.cts.projectmanager.dto.TaskDTO;
 import com.cts.projectmanager.dto.UserDTO;
 import com.cts.projectmanager.eo.ParentEO;
+import com.cts.projectmanager.eo.ProjectEO;
 import com.cts.projectmanager.eo.TaskEO;
 import com.cts.projectmanager.eo.UsersEO;
 import com.cts.projectmanager.repository.IParentRepository;
+import com.cts.projectmanager.repository.IProjectRepository;
 import com.cts.projectmanager.repository.ITaskRepository;
 import com.cts.projectmanager.repository.IUsersRepository;
 import com.cts.projectmanager.utils.Utils;
@@ -18,18 +20,21 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Component
 public class TaskDomainImpl implements ITaskDomain {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskDomainImpl.class);
     private ITaskRepository taskRepository;
     private IParentRepository parentRepository;
     private IUsersRepository usersRepository;
+    private IProjectRepository projectRepository;
 
     @Autowired
-    public TaskDomainImpl(ITaskRepository taskRepository, IParentRepository parentRepository,IUsersRepository usersRepository) {
+    public TaskDomainImpl(ITaskRepository taskRepository, IParentRepository parentRepository, IUsersRepository usersRepository, IProjectRepository projectRepository) {
         this.taskRepository = taskRepository;
         this.parentRepository = parentRepository;
         this.usersRepository = usersRepository;
+        this.projectRepository = projectRepository;
     }
 
     /**
@@ -76,7 +81,7 @@ public class TaskDomainImpl implements ITaskDomain {
         LOGGER.debug("fetchTasks() method start");
         List<TaskEO> taskEOS = taskRepository.findAll();
         List<TaskDTO> response = new ArrayList<>();
-        for (TaskEO taskEO        : taskEOS) {
+        for (TaskEO taskEO : taskEOS) {
             TaskDTO task = new TaskDTO();
             task.setTaskId(taskEO.getTaskId());
             task.setTask(taskEO.getTask());
@@ -84,20 +89,20 @@ public class TaskDomainImpl implements ITaskDomain {
             task.setEndDate(taskEO.getEndDate().toString());
             task.setPriority(taskEO.getPriority());
             ParentEO parentEO = taskEO.getParent();
-            if(parentEO !=null){
-                ParentTaskDTO parentTaskDTO = new ParentTaskDTO(parentEO.getParentId(),parentEO.getParentTask());
+            if (parentEO != null) {
+                ParentTaskDTO parentTaskDTO = new ParentTaskDTO(parentEO.getParentId(), parentEO.getParentTask());
                 task.setParentTask(parentTaskDTO);
             }
-            if(null!=taskEO.getProject()){
+            if (null != taskEO.getProject()) {
                 ProjectDTO projectDTO = new ProjectDTO();
                 projectDTO.setPriority(taskEO.getProject().getPriority());
-                projectDTO.setStartDate(taskEO.getProject().getStartDate()!=null ?taskEO.getProject().getStartDate().toString():null);
-                projectDTO.setEndDate(taskEO.getProject().getEndDate()!=null ?taskEO.getProject().getEndDate().toString():null);
+                projectDTO.setStartDate(taskEO.getProject().getStartDate() != null ? taskEO.getProject().getStartDate().toString() : null);
+                projectDTO.setEndDate(taskEO.getProject().getEndDate() != null ? taskEO.getProject().getEndDate().toString() : null);
                 projectDTO.setProject(taskEO.getProject().getProject());
                 projectDTO.setProjectId(taskEO.getProject().getProjectId());
                 task.setProject(projectDTO);
             }
-            if(null != taskEO.getUser()){
+            if (null != taskEO.getUser()) {
                 UserDTO user = new UserDTO();
                 user.setUserId(taskEO.getUser().getUserId());
                 user.setLastName(taskEO.getUser().getLastName());
@@ -105,8 +110,8 @@ public class TaskDomainImpl implements ITaskDomain {
                 user.setEmployeeId(taskEO.getUser().getEmployeeId());
                 task.setUser(user);
             }
-          //  task.setProjectId(taskEO.getProjectId());
-          //  task.setParentId(taskEO.getParentId());
+            //  task.setProjectId(taskEO.getProjectId());
+            //  task.setParentId(taskEO.getParentId());
             response.add(task);
         }
         LOGGER.debug("fetchTasks() method end");
@@ -123,8 +128,6 @@ public class TaskDomainImpl implements ITaskDomain {
     public List<TaskDTO> addTask(TaskDTO task) {
         TaskEO taskEO = Utils.createTaskEO(task);
         TaskEO taskResponse = taskRepository.saveAndFlush(taskEO);
-        //UsersEO userEO = Utils.createUserEO(task.getUser());
-        //userEO.setTask(taskResponse);
         UsersEO userEO = usersRepository.findUsersEOByUserId(task.getUser().getUserId());
         userEO.setTask(taskResponse);
         usersRepository.saveAndFlush(userEO);
@@ -132,24 +135,61 @@ public class TaskDomainImpl implements ITaskDomain {
     }
 
     /**
-     * Method to edit Task
+     * Method to fetch Tasks based on the Project Id
      *
-     * @param task
+     * @param projectId
      * @return
      */
     @Override
-    public List<TaskDTO> editTask(TaskDTO task) {
-        return null;
+    public List<TaskDTO> fetchTask(Long projectId) {
+        ProjectEO projectEO = projectRepository.findProjectEOByProjectId(projectId);
+        //List<TaskEO> taskEOS= taskRepository.findTaskEOSByProjectId(projectId);
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setProjectId(projectEO.getProjectId());
+        projectDTO.setProject(projectEO.getProject());
+        projectDTO.setStartDate(projectEO.getStartDate() != null ? projectEO.getStartDate().toString() : "");
+        projectDTO.setEndDate(projectEO.getEndDate() != null ? projectEO.getEndDate().toString() : "");
+        projectDTO.setPriority(projectEO.getPriority());
+        List<TaskDTO> response = new ArrayList<>();
+        for (TaskEO task : projectEO.getTasks()) {
+            TaskDTO taskDTO = new TaskDTO();
+            taskDTO.setTaskId(task.getTaskId());
+            taskDTO.setTask(task.getTask());
+            if (null != task.getParent()) {
+                ParentTaskDTO parentTaskDTO = new ParentTaskDTO(task.getParent().getParentId(), task.getParent().getParentTask());
+                taskDTO.setParentTask(parentTaskDTO);
+            }
+            taskDTO.setPriority(task.getPriority());
+            taskDTO.setStartDate(task.getStartDate().toString());
+            taskDTO.setEndDate(task.getEndDate().toString());
+            taskDTO.setStatus(task.getStatus());
+            taskDTO.setProject(projectDTO);
+
+            UsersEO usersEO = task.getUser();
+            UserDTO userDTO = new UserDTO();
+            if (usersEO != null) {
+                userDTO.setUserId(usersEO.getUserId());
+                userDTO.setFirstName(usersEO.getFirstName());
+                userDTO.setLastName(usersEO.getLastName());
+                userDTO.setEmployeeId(usersEO.getEmployeeId());
+                taskDTO.setUser(userDTO);
+            }
+            response.add(taskDTO);
+        }
+        return response;
     }
 
     /**
-     * Method to delete Task
+     * Method to complete a Task
      *
-     * @param task
+     * @param taskId
      * @return
      */
     @Override
-    public List<TaskDTO> deleteTask(TaskDTO task) {
-        return null;
+    public List<TaskDTO> completeTask(Long taskId) {
+        TaskEO taskEO = taskRepository.findTaskEOSByTaskId(taskId);
+        taskEO.setStatus("completed");
+        taskRepository.saveAndFlush(taskEO);
+        return fetchTask(taskEO.getProject().getProjectId());
     }
 }
